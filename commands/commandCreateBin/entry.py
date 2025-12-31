@@ -633,14 +633,16 @@ def command_created(args: adsk.core.CommandCreatedEventArgs):
     commandUIState.registerCommandInput(binTabLengthInput)
     binTabWidthInput = binTabFeaturesGroup.children.addValueInput(BIN_TAB_WIDTH_INPUT_ID, 'Tab width (mm)', defaultLengthUnits, adsk.core.ValueInput.createByReal(commandUIState.getState(BIN_TAB_WIDTH_INPUT_ID)))
     commandUIState.registerCommandInput(binTabWidthInput)
-    binTabPostionInput = binTabFeaturesGroup.children.addValueInput(BIN_TAB_POSITION_INPUT_ID, 'Tab offset (u)', '', adsk.core.ValueInput.createByReal(commandUIState.getState(BIN_TAB_POSITION_INPUT_ID)))
-    commandUIState.registerCommandInput(binTabPostionInput)
-    tabObverhangAngleInput = binTabFeaturesGroup.children.addValueInput(BIN_TAB_ANGLE_INPUT_ID, 'Tab overhang angle', 'deg', adsk.core.ValueInput.createByString(str(commandUIState.getState(BIN_TAB_ANGLE_INPUT_ID))))
-    tabObverhangAngleInput.minimumValue = math.radians(30)
-    tabObverhangAngleInput.isMinimumInclusive = True
-    tabObverhangAngleInput.maximumValue = math.radians(65)
-    tabObverhangAngleInput.isMaximumInclusive = True
-    commandUIState.registerCommandInput(tabObverhangAngleInput)
+    binTabPositionInput = binTabFeaturesGroup.children.addValueInput(BIN_TAB_POSITION_INPUT_ID, 'Tab offset (u)', '', adsk.core.ValueInput.createByReal(commandUIState.getState(BIN_TAB_POSITION_INPUT_ID)))
+    binTabPositionInput.minimumValue = 0.0
+    binTabPositionInput.isMinimumInclusive = True
+    commandUIState.registerCommandInput(binTabPositionInput)
+    tabOverhangAngleInput = binTabFeaturesGroup.children.addValueInput(BIN_TAB_ANGLE_INPUT_ID, 'Tab overhang angle', 'deg', adsk.core.ValueInput.createByString(str(commandUIState.getState(BIN_TAB_ANGLE_INPUT_ID))))
+    tabOverhangAngleInput.minimumValue = math.radians(30)
+    tabOverhangAngleInput.isMinimumInclusive = True
+    tabOverhangAngleInput.maximumValue = math.radians(65)
+    tabOverhangAngleInput.isMaximumInclusive = True
+    commandUIState.registerCommandInput(tabOverhangAngleInput)
 
     tabMethodDropdown = binTabFeaturesGroup.children.addDropDownCommandInput(BIN_TAB_METHOD_INPUT_ID, 'Tab construction method', adsk.core.DropDownStyles.LabeledIconDropDownStyle)
     tabMethodDropdownDefaultValue = commandUIState.getState(BIN_TAB_METHOD_INPUT_ID)
@@ -649,7 +651,7 @@ def command_created(args: adsk.core.CommandCreatedEventArgs):
     commandUIState.registerCommandInput(tabMethodDropdown)
 
     rootThicknessInput = binTabFeaturesGroup.children.addValueInput(BIN_TAB_ROOT_THICKNESS_INPUT_ID, 'Root thickness (mm)', defaultLengthUnits, adsk.core.ValueInput.createByReal(commandUIState.getState(BIN_TAB_ROOT_THICKNESS_INPUT_ID)))
-    rootThicknessInput.minimumValue = 0.1
+    rootThicknessInput.minimumValue = 0.001
     rootThicknessInput.isMinimumInclusive = True
     commandUIState.registerCommandInput(rootThicknessInput)
 
@@ -657,7 +659,7 @@ def command_created(args: adsk.core.CommandCreatedEventArgs):
     commandUIState.registerCommandInput(uniformThicknessInput)
 
     tipThicknessInput = binTabFeaturesGroup.children.addValueInput(BIN_TAB_TIP_THICKNESS_INPUT_ID, 'Tip thickness (mm)', defaultLengthUnits, adsk.core.ValueInput.createByReal(commandUIState.getState(BIN_TAB_TIP_THICKNESS_INPUT_ID)))
-    tipThicknessInput.minimumValue = 0.1
+    tipThicknessInput.minimumValue = 0.001
     tipThicknessInput.isMinimumInclusive = True
     commandUIState.registerCommandInput(tipThicknessInput)
 
