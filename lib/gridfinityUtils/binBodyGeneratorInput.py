@@ -62,8 +62,11 @@ class BinBodyGeneratorInput():
         self.tabOverhangAngle = const.BIN_TAB_OVERHANG_ANGLE
         self.tabPosition = 0
         self.tabLength = 1
-        self.tabWidth = const.BIN_TAB_WIDTH
-        self.compartments = [BinBodyCompartmentDefinition()]
+        self.tabOverhangAngle = 45
+        self.tabMethod = const.BIN_TAB_METHOD_ANGLE
+        self.rootThickness = const.BIN_TAB_DEFAULT_ROOT_THICKNESS
+        self.tipThickness = const.BIN_TAB_DEFAULT_TIP_THICKNESS
+        self.compartments: list[BinBodyCompartmentDefinition] = []
         self.compartmentsByX = 1
         self.compartmentsByY = 1
         self.binCornerFilletRadius = const.BIN_CORNER_FILLET_RADIUS

@@ -7,6 +7,9 @@ class BinBodyTabGeneratorInput():
         self.overhangAngle = const.BIN_TAB_OVERHANG_ANGLE
         self.labelAngle = const.BIN_TAB_LABEL_ANGLE
         self.position = 0
+        self._tabMethod = const.BIN_TAB_METHOD_ANGLE
+        self._rootThickness = const.BIN_TAB_DEFAULT_ROOT_THICKNESS
+        self._tipThickness = const.BIN_TAB_DEFAULT_TIP_THICKNESS
 
     @property
     def topClearance(self) -> float:
@@ -55,5 +58,29 @@ class BinBodyTabGeneratorInput():
     @labelAngle.setter
     def labelAngle(self, value: float):
         self._tablabelAngle = value
+
+    @property
+    def tabMethod(self) -> str:
+        return self._tabMethod
+
+    @tabMethod.setter
+    def tabMethod(self, value: str):
+        self._tabMethod = value
+
+    @property
+    def rootThickness(self) -> float:
+        return self._rootThickness
+
+    @rootThickness.setter
+    def rootThickness(self, value: float):
+        self._rootThickness = value
+
+    @property
+    def tipThickness(self) -> float:
+        return self._tipThickness
+
+    @tipThickness.setter
+    def tipThickness(self, value: float):
+        self._tipThickness = value
 
     
