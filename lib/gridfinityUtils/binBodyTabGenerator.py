@@ -102,16 +102,11 @@ def createGridfinityBinBodyTab(
         l_back = tabSketchLine.addByTwoPoints(tabSketch.modelToSketchSpace(p_bot_back), tabSketch.modelToSketchSpace(p_top_back))
         
         # Constraints
-        # Since we projected world points, we rely on standard constraints relative to the resulting geometry
-        # Top line should be horizontal (if Z is constant)
-        constraints.addHorizontal(l_top)
+        # Removing geometric constraints (Horizontal/Vertical) to avoid conflict with Sketch Plane orientation.
+        # The points are calculated in World Space to be correct, so we rely on their explicit positions.
         
-        # Back line (wall) should be vertical (if Y is constant)
-        constraints.addVertical(l_back)
-        
-        # Front line (tip) should be vertical
-        constraints.addVertical(l_front)
-        
+        # We still chain the lines to ensure a closed profile (Coincident is usually implicit with shared points in API, 
+        # but explicit Coincident on end points guarantees connectivity for Profile creation).
         constraints.addCoincident(l_top.endSketchPoint, l_front.startSketchPoint)
         constraints.addCoincident(l_front.endSketchPoint, l_bot.startSketchPoint)
         constraints.addCoincident(l_bot.endSketchPoint, l_back.startSketchPoint)
