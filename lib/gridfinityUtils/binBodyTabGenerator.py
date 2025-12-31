@@ -99,18 +99,73 @@ def createGridfinityBinBodyTab(
         l_top = tabSketchLine.addByTwoPoints(tabSketch.modelToSketchSpace(p_top_back), tabSketch.modelToSketchSpace(p_top_front))
         l_front = tabSketchLine.addByTwoPoints(tabSketch.modelToSketchSpace(p_top_front), tabSketch.modelToSketchSpace(p_bot_front))
         l_bot = tabSketchLine.addByTwoPoints(tabSketch.modelToSketchSpace(p_bot_front), tabSketch.modelToSketchSpace(p_bot_back))
-        l_back = tabSketchLine.addByTwoPoints(tabSketch.modelToSketchSpace(p_bot_back), tabSketch.modelToSketchSpace(p_top_back))
+        # Debug logging
+        futil.log(f"DEBUG: Tab Back Fillet Value: {input.tabFilletBack}")
         
-        # Constraints
-        # Removing geometric constraints (Horizontal/Vertical) to avoid conflict with Sketch Plane orientation.
-        # The points are calculated in World Space to be correct, so we rely on their explicit positions.
-        
-        # We still chain the lines to ensure a closed profile (Coincident is usually implicit with shared points in API, 
-        # but explicit Coincident on end points guarantees connectivity for Profile creation).
-        constraints.addCoincident(l_top.endSketchPoint, l_front.startSketchPoint)
-        constraints.addCoincident(l_front.endSketchPoint, l_bot.startSketchPoint)
-        constraints.addCoincident(l_bot.endSketchPoint, l_back.startSketchPoint)
-        constraints.addCoincident(l_back.endSketchPoint, l_top.startSketchPoint)
+        if input.tabFilletBack > 0.001:
+            futil.log("DEBUG: Generating Back Fillet Geometry")
+            # Back Fillet (Support) Logic
+            # We want to fillet the corner between l_bot and the Wall (downwards).
+            # Epsilon shift to ensure the wedge is 'inside' the cutout void for Intersection.
+            epsilon = 0.0001
+            y_back_shifted = y_back - epsilon
+            
+            # 1. Create temporary wall extension line downwards.
+            p_wall_low = adsk.core.Point3D.create(input.origin.x, y_back_shifted, z_root_bottom - input.tabFilletBack * 10.0 - 1.0) # sufficiently low
+            l_wall_temp = tabSketchLine.addByTwoPoints(tabSketch.modelToSketchSpace(p_bot_back), tabSketch.modelToSketchSpace(p_wall_low))
+            
+            # 2. Add Fillet between l_bot and l_wall_temp
+            # Note: l_bot ends at p_bot_back. l_wall_temp starts at p_bot_back.
+            # addFillet needs the lines to share the point or intersect.
+            arc = tabSketch.sketchCurves.sketchArcs.addFillet(l_bot, l_bot.endSketchPoint.geometry, l_wall_temp, l_wall_temp.startSketchPoint.geometry, input.tabFilletBack)
+            
+            # 3. Clean up
+            # l_bot is now trimmed. arc connects l_bot end to l_wall_temp start (shifted).
+            # The segment of l_wall_temp from 'tangent point' to 'p_wall_low' remains. We assume we don't want a "tail".
+            # We want the profile to close along the wall from the arc end to the top.
+            # The 'arc' ends at the wall tangent.
+            # We delete l_wall_temp.
+            # We create l_back from arc.endSketchPoint (or start, depending on geometry) to p_top_back.
+            
+            # Identify the point on the wall. The arc connects approximate l_bot (slope) to l_wall_temp (vertical).
+            # One endpoint of arc is on the wall vertical line.
+            # We can check X coordinate in sketch space? Sketch X = Model Y = y_back.
+            # Sketch Y = Model Z.
+            # Check p_top_back (y=y_back).
+            
+            p1 = arc.startSketchPoint
+            p2 = arc.endSketchPoint
+            # The wall point is the one with the LARGER X (closer to back/y_back).
+            p_wall_tan = p1 if p1.geometry.x > p2.geometry.x else p2
+            
+            sp_top_back = tabSketch.modelToSketchSpace(p_top_back)
+            
+            l_wall_temp.deleteMe()
+            
+            # 4. Create Back Line
+            # We connect p_wall_tan to p_top_back. 
+            # Note: p_top_back is at y_back. p_wall_tan is at y_back_shifted.
+            # This creates a tiny slope on the back wall of the tab.
+            l_back = tabSketchLine.addByTwoPoints(p_wall_tan, sp_top_back)
+            
+            # Constraint Chain needs update because l_bot end changed and l_back start changed.
+            constraints.addCoincident(l_top.endSketchPoint, l_front.startSketchPoint)
+            constraints.addCoincident(l_front.endSketchPoint, l_bot.startSketchPoint)
+            # constraints.addCoincident(l_bot.endSketchPoint, arc.generatedPoint) -> Not needed, addFillet handles this.
+            
+            # Make sure l_back (Wall) is tangent to the arc (Smooth transition)
+            constraints.addTangent(l_back, arc)
+            
+            # Close the loop at the top
+            constraints.addCoincident(l_back.endSketchPoint, l_top.startSketchPoint)
+            
+        else:
+            l_back = tabSketchLine.addByTwoPoints(tabSketch.modelToSketchSpace(p_bot_back), tabSketch.modelToSketchSpace(p_top_back))
+            
+            constraints.addCoincident(l_top.endSketchPoint, l_front.startSketchPoint)
+            constraints.addCoincident(l_front.endSketchPoint, l_bot.startSketchPoint)
+            constraints.addCoincident(l_bot.endSketchPoint, l_back.startSketchPoint)
+            constraints.addCoincident(l_back.endSketchPoint, l_top.startSketchPoint)
         # Let's verify standard Orientation. YZ plane. U=Y, V=Z.
         # Horizontal constraint in Fusion sketch usually means parallel to X axis of sketch.
         # Sketch X axis usually corresponds to Model Y for YZ plane.

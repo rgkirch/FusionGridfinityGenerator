@@ -33,12 +33,14 @@ BIN_TAB_TIP_THICKNESS_INPUT_ID = 'bin_tab_tip_thickness'
 BIN_TAB_FILLET_UNIFORM_INPUT_ID = 'bin_tab_fillet_uniform'
 BIN_TAB_FILLET_TOP_INPUT_ID = 'bin_tab_fillet_top'
 BIN_TAB_FILLET_BOTTOM_INPUT_ID = 'bin_tab_fillet_bottom'
+BIN_TAB_FILLET_BACK_INPUT_ID = 'bin_tab_fillet_back'
 
 # Default values (Internal units are cm, so 0.14 = 1.4mm)
 BIN_TAB_DEFAULT_ROOT_THICKNESS = 0.14
 BIN_TAB_DEFAULT_TIP_THICKNESS = 0.14
 BIN_TAB_DEFAULT_IS_UNIFORM = True
 BIN_TAB_DEFAULT_IS_FILLET_UNIFORM = True
+BIN_TAB_DEFAULT_FILLET_BACK = 0.0
 
 BIN_SCOOP_MAX_RADIUS = 2.5
 

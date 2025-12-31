@@ -68,6 +68,7 @@ class BinBodyGeneratorInput():
         self.tipThickness = const.BIN_TAB_DEFAULT_TIP_THICKNESS
         self.tabFilletTop = const.BIN_TAB_DEFAULT_TIP_THICKNESS / 2
         self.tabFilletBottom = const.BIN_TAB_DEFAULT_TIP_THICKNESS / 2
+        self.tabFilletBack = const.BIN_TAB_DEFAULT_FILLET_BACK
         self.compartments: list[BinBodyCompartmentDefinition] = []
         self.compartmentsByX = 1
         self.compartmentsByY = 1

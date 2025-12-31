@@ -12,6 +12,7 @@ class BinBodyTabGeneratorInput():
         self._tipThickness = const.BIN_TAB_DEFAULT_TIP_THICKNESS
         self._tabFilletTop = const.BIN_TAB_DEFAULT_TIP_THICKNESS / 2
         self._tabFilletBottom = const.BIN_TAB_DEFAULT_TIP_THICKNESS / 2
+        self._tabFilletBack = const.BIN_TAB_DEFAULT_FILLET_BACK
 
     @property
     def topClearance(self) -> float:
@@ -100,5 +101,13 @@ class BinBodyTabGeneratorInput():
     @tabFilletBottom.setter
     def tabFilletBottom(self, value: float):
         self._tabFilletBottom = value
+    
+    @property
+    def tabFilletBack(self) -> float:
+        return self._tabFilletBack
+    
+    @tabFilletBack.setter
+    def tabFilletBack(self, value: float):
+        self._tabFilletBack = value
 
     
