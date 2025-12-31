@@ -208,12 +208,42 @@ def createGridfinityBinBodyTab(
         # Select all edges at that min_y (within float tolerance)
         front_edges = [edge for edge in x_edges if abs(edge.boundingBox.minPoint.y - min_y) < 0.001]
         
-        fillet = filletUtils.createFillet(
-            front_edges,
-            BIN_TAB_EDGE_FILLET_RADIUS,
-            False,
-            targetComponent
-        )
-        fillet.name = 'label tab fillet'
+        if len(front_edges) >= 2:
+            # Sort by Z (height) desc. Top edge is first.
+            front_edges_sorted = sorted(front_edges, key=lambda e: e.boundingBox.minPoint.z, reverse=True)
+            top_edge = front_edges_sorted[0]
+            bottom_edge = front_edges_sorted[1]
+            
+            # Apply Top Fillet
+            if input.tabFilletTop > 0.001:
+                filletTop = filletUtils.createFillet(
+                    [top_edge],
+                    input.tabFilletTop,
+                    False,
+                    targetComponent
+                )
+                filletTop.name = 'label tab fillet top'
+
+            # Apply Bottom Fillet
+            if input.tabFilletBottom > 0.001:
+                filletBottom = filletUtils.createFillet(
+                    [bottom_edge],
+                    input.tabFilletBottom,
+                    False,
+                    targetComponent
+                )
+                filletBottom.name = 'label tab fillet bottom'
+        elif len(front_edges) == 1:
+            # Maybe Angle method makes a sharp tip with only one edge?
+            # If so, just apply top fillet? Or maybe the user sees it as one edge.
+            # Let's apply Top radius.
+             if input.tabFilletTop > 0.001:
+                fillet = filletUtils.createFillet(
+                    front_edges,
+                    input.tabFilletTop,
+                    False,
+                    targetComponent
+                )
+                fillet.name = 'label tab fillet'
 
     return tabBody

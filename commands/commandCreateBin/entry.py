@@ -100,6 +100,10 @@ BIN_TAB_METHOD_INPUT_ID = 'bin_tab_method'
 BIN_TAB_ROOT_THICKNESS_INPUT_ID = 'bin_tab_root_thickness'
 BIN_TAB_TIP_THICKNESS_INPUT_ID = 'bin_tab_tip_thickness'
 BIN_TAB_UNIFORM_THICKNESS_INPUT_ID = 'bin_tab_uniform_thickness'
+BIN_TAB_FILLET_UNIFORM_INPUT_ID = 'bin_tab_fillet_uniform'
+BIN_TAB_FILLET_TOP_INPUT_ID = 'bin_tab_fillet_top'
+BIN_TAB_FILLET_BOTTOM_INPUT_ID = 'bin_tab_fillet_bottom'
+
 BIN_WITH_LIP_INPUT_ID = 'with_lip'
 BIN_WITH_LIP_NOTCHES_INPUT_ID = 'with_lip_notches'
 BIN_COMPARTMENT_REAL_DIMENSIONS_TABLE = "compartment_real_dimensions"
@@ -189,6 +193,10 @@ def initDefaultUiState():
     commandUIState.initValue(BIN_TAB_ROOT_THICKNESS_INPUT_ID, const.BIN_TAB_DEFAULT_ROOT_THICKNESS, adsk.core.ValueCommandInput.classType())
     commandUIState.initValue(BIN_TAB_UNIFORM_THICKNESS_INPUT_ID, const.BIN_TAB_DEFAULT_IS_UNIFORM, adsk.core.BoolValueCommandInput.classType())
     commandUIState.initValue(BIN_TAB_TIP_THICKNESS_INPUT_ID, const.BIN_TAB_DEFAULT_TIP_THICKNESS, adsk.core.ValueCommandInput.classType())
+    # Fillets default to half the tip thickness (0.07)
+    commandUIState.initValue(BIN_TAB_FILLET_TOP_INPUT_ID, const.BIN_TAB_DEFAULT_TIP_THICKNESS / 2, adsk.core.ValueCommandInput.classType())
+    commandUIState.initValue(BIN_TAB_FILLET_BOTTOM_INPUT_ID, const.BIN_TAB_DEFAULT_TIP_THICKNESS / 2, adsk.core.ValueCommandInput.classType())
+    commandUIState.initValue(BIN_TAB_FILLET_UNIFORM_INPUT_ID, const.BIN_TAB_DEFAULT_IS_FILLET_UNIFORM, adsk.core.BoolValueCommandInput.classType())
 
     commandUIState.initValue(BIN_GENERATE_BASE_INPUT_ID, True, adsk.core.BoolValueCommandInput.classType())
     commandUIState.initValue(BIN_SCREW_HOLES_INPUT_ID, False, adsk.core.BoolValueCommandInput.classType())
@@ -653,6 +661,16 @@ def command_created(args: adsk.core.CommandCreatedEventArgs):
     tipThicknessInput.isMinimumInclusive = True
     commandUIState.registerCommandInput(tipThicknessInput)
 
+    # Fillet Inputs
+    topFilletInput = binTabFeaturesGroup.children.addValueInput(BIN_TAB_FILLET_TOP_INPUT_ID, 'Top front fillet (mm)', defaultLengthUnits, adsk.core.ValueInput.createByReal(commandUIState.getState(BIN_TAB_FILLET_TOP_INPUT_ID)))
+    commandUIState.registerCommandInput(topFilletInput)
+    
+    uniformFilletInput = binTabFeaturesGroup.children.addBoolValueInput(BIN_TAB_FILLET_UNIFORM_INPUT_ID, 'Uniform fillet', True, '', commandUIState.getState(BIN_TAB_FILLET_UNIFORM_INPUT_ID))
+    commandUIState.registerCommandInput(uniformFilletInput)
+
+    bottomFilletInput = binTabFeaturesGroup.children.addValueInput(BIN_TAB_FILLET_BOTTOM_INPUT_ID, 'Bottom front fillet (mm)', defaultLengthUnits, adsk.core.ValueInput.createByReal(commandUIState.getState(BIN_TAB_FILLET_BOTTOM_INPUT_ID)))
+    commandUIState.registerCommandInput(bottomFilletInput)
+
     for input in binTabFeaturesGroup.children:
         if not input.id == BIN_HAS_TAB_INPUT_ID:
             input.isEnabled = commandUIState.getState(BIN_HAS_TAB_INPUT_ID)
@@ -887,6 +905,16 @@ def onChangeValidate():
 
     commandUIState.getInput(BIN_TAB_TIP_THICKNESS_INPUT_ID).isVisible = isDimensionsMethod
     commandUIState.getInput(BIN_TAB_TIP_THICKNESS_INPUT_ID).isEnabled = generateTab and isDimensionsMethod and not isUniformThickness
+
+    isFilletUniform = commandUIState.getState(BIN_TAB_FILLET_UNIFORM_INPUT_ID)
+    commandUIState.getInput(BIN_TAB_FILLET_TOP_INPUT_ID).isVisible = generateTab
+    commandUIState.getInput(BIN_TAB_FILLET_TOP_INPUT_ID).isEnabled = generateTab
+    
+    commandUIState.getInput(BIN_TAB_FILLET_UNIFORM_INPUT_ID).isVisible = generateTab
+    commandUIState.getInput(BIN_TAB_FILLET_UNIFORM_INPUT_ID).isEnabled = generateTab
+    
+    commandUIState.getInput(BIN_TAB_FILLET_BOTTOM_INPUT_ID).isVisible = generateTab
+    commandUIState.getInput(BIN_TAB_FILLET_BOTTOM_INPUT_ID).isEnabled = generateTab and not isFilletUniform
     
     compartmentsGridType: str = commandUIState.getState(BIN_COMPARTMENTS_GRID_TYPE_ID)
     commandUIState.getInput(BIN_COMPARTMENTS_TABLE_ID).isVisible = compartmentsGridType == BIN_COMPARTMENTS_GRID_TYPE_CUSTOM
@@ -1013,6 +1041,13 @@ def generateBin(args: adsk.core.CommandEventArgs):
             binBodyInput.tipThickness = binBodyInput.rootThickness
         else:
             binBodyInput.tipThickness = commandUIState.getState(BIN_TAB_TIP_THICKNESS_INPUT_ID)
+
+        isFilletUniform = commandUIState.getState(BIN_TAB_FILLET_UNIFORM_INPUT_ID)
+        binBodyInput.tabFilletTop = commandUIState.getState(BIN_TAB_FILLET_TOP_INPUT_ID)
+        if isFilletUniform:
+            binBodyInput.tabFilletBottom = binBodyInput.tabFilletTop
+        else:
+            binBodyInput.tabFilletBottom = commandUIState.getState(BIN_TAB_FILLET_BOTTOM_INPUT_ID)
 
         binBodyInput.compartmentsByX = compartmentsX.value
         binBodyInput.compartmentsByY = compartmentsY.value
