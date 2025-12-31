@@ -147,6 +147,8 @@ def createGridfinityBinBody(
             compartmentTabInput.tabMethod = input.tabMethod
             compartmentTabInput.rootThickness = input.rootThickness
             compartmentTabInput.tipThickness = input.tipThickness
+            compartmentTabInput.tabFilletTop = input.tabFilletTop
+            compartmentTabInput.tabFilletBottom = input.tabFilletBottom
 
             [compartmentMerges, compartmentCuts] = createCompartment(
                 input.wallThickness,
