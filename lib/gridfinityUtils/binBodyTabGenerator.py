@@ -197,19 +197,23 @@ def createGridfinityBinBodyTab(
     tabBody = tabExtrudeFeature.bodies.item(0)
     tabBody.name = 'label tab'
 
-    tabTopFace = faceUtils.getTopFace(tabBody)
+    # Fillet logic
+    # User wants both Top and Bottom edges of the tip to be filleted.
+    # We find all X-collinear edges.
+    x_edges = [edge for edge in tabBody.edges if geometryUtils.isCollinearToX(edge)]
     
-    # Fillet logic might need adjustment if top face edges change
-    # But for now, we assume standard behavior.
-    # We need to find the edge that is collinear to X (length of tab) and has min Y (inner edge? no, outer edge of top face)
-    
-    roundedEdge = min([edge for edge in tabTopFace.edges if geometryUtils.isCollinearToX(edge)], key=lambda x: x.boundingBox.minPoint.y)
-    fillet = filletUtils.createFillet(
-        [roundedEdge],
-        BIN_TAB_EDGE_FILLET_RADIUS,
-        False,
-        targetComponent
-    )
-    fillet.name = 'label tab fillet'
+    # Find the minimum Y (Front of the tab)
+    if x_edges:
+        min_y = min(x_edges, key=lambda e: e.boundingBox.minPoint.y).boundingBox.minPoint.y
+        # Select all edges at that min_y (within float tolerance)
+        front_edges = [edge for edge in x_edges if abs(edge.boundingBox.minPoint.y - min_y) < 0.001]
+        
+        fillet = filletUtils.createFillet(
+            front_edges,
+            BIN_TAB_EDGE_FILLET_RADIUS,
+            False,
+            targetComponent
+        )
+        fillet.name = 'label tab fillet'
 
     return tabBody
